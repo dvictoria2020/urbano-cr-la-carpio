@@ -137,6 +137,24 @@
         "stroke_width": 1.2
       },
       "caveat": "Exige publicar definición de variables, pesos y fuente censal utilizada."
+    },
+    {
+      "id": "cr-carpio-hex-poblacion",
+      "title": "Distribución de Población — Malla Hexagonal 30 m",
+      "group": "Estimación poblacional",
+      "format": "geojson",
+      "geometry_type": "polygon",
+      "status": "publicado",
+      "source_path": "geovisor/capas/malla_hexagonal_poblacion.geojson",
+      "expected_file_hint": "geovisor/capas/malla_hexagonal_poblacion.geojson",
+      "resolution": "Hexágonos ~30 m (área ≈ 779 m²), EPSG:4326",
+      "style": {
+        "fill_color": "#FF6B35",
+        "fill_opacity": 0.7,
+        "stroke_color": "#CC4400",
+        "stroke_width": 0.5
+      },
+      "caveat": "Estimación basada en Google Open Buildings v3. Factor base: 4.5 personas/vivienda. Modelo piecewise calibrado con datos locales (ratio Google/local = 0.988)."
     }
   ]
 }
