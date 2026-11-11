@@ -1266,56 +1266,78 @@
           var fillOpacity = (lyr.style && lyr.style.fill_opacity) !== undefined ? lyr.style.fill_opacity : 0.22;
           var strokeColor = (lyr.style && lyr.style.stroke_color) || "#14283F";
           var strokeWidth = (lyr.style && lyr.style.stroke_width) || 2;
-
-          fetch(resolvedSource)
-            .then(function (r) {
-              return r.ok ? r.json() : null;
-            })
-            .then(function (gj) {
-              if (!gj) return;
-              renderGeoJsonSourceLayers(
-                srcId,
-                lyr.id,
-                gj,
-                fillColor,
-                fillOpacity,
-                strokeColor,
-                strokeWidth,
-                "CAPA DEL PROYECTO · " + (lyr.status || "").toUpperCase(),
-                lyr.title
-              );
-              if (!initialBoundsFitted) {
-                var b = computeGeoJsonBounds(gj);
-                if (b) {
-                  if (!combinedBounds) {
-                    combinedBounds = [[b[0][0], b[0][1]], [b[1][0], b[1][1]]];
-                  } else {
-                    combinedBounds[0][0] = Math.min(combinedBounds[0][0], b[0][0]);
-                    combinedBounds[0][1] = Math.min(combinedBounds[0][1], b[0][1]);
-                    combinedBounds[1][0] = Math.max(combinedBounds[1][0], b[1][0]);
-                    combinedBounds[1][1] = Math.max(combinedBounds[1][1], b[1][1]);
-                  }
-                  mapInstance.fitBounds(combinedBounds, { padding: 42, maxZoom: 15.2, duration: 0 });
-                }
-              }
-            })
-            .catch(function (err) {
-              if (window.console && console.warn) console.warn("Error al cargar capa del geovisor:", lyr.id, err);
-            });
-
           var chk = document.querySelector('[data-layer-toggle="' + lyr.id + '"]');
+          var visibleByDefault = lyr.default_visible !== false;
+          var layerLoaded = false;
+          var layerLoading = false;
+
+          function setProjectLayerVisibility(visible) {
+            var visibility = visible ? "visible" : "none";
+            ["-fill", "-line", "-pt"].forEach(function (suf) {
+              if (mapInstance.getLayer(lyr.id + suf)) {
+                mapInstance.setLayoutProperty(lyr.id + suf, "visibility", visibility);
+              }
+            });
+          }
+
+          function loadProjectLayer() {
+            if (layerLoaded) {
+              setProjectLayerVisibility(chk ? chk.checked : visibleByDefault);
+              return;
+            }
+            if (layerLoading) return;
+            layerLoading = true;
+            fetch(resolvedSource)
+              .then(function (r) {
+                return r.ok ? r.json() : null;
+              })
+              .then(function (gj) {
+                if (!gj) return;
+                renderGeoJsonSourceLayers(
+                  srcId,
+                  lyr.id,
+                  gj,
+                  fillColor,
+                  fillOpacity,
+                  strokeColor,
+                  strokeWidth,
+                  "CAPA DEL PROYECTO · " + (lyr.status || "").toUpperCase(),
+                  lyr.title
+                );
+                layerLoaded = true;
+                setProjectLayerVisibility(chk ? chk.checked : visibleByDefault);
+                if (visibleByDefault && !initialBoundsFitted) {
+                  var b = computeGeoJsonBounds(gj);
+                  if (b) {
+                    if (!combinedBounds) {
+                      combinedBounds = [[b[0][0], b[0][1]], [b[1][0], b[1][1]]];
+                    } else {
+                      combinedBounds[0][0] = Math.min(combinedBounds[0][0], b[0][0]);
+                      combinedBounds[0][1] = Math.min(combinedBounds[0][1], b[0][1]);
+                      combinedBounds[1][0] = Math.max(combinedBounds[1][0], b[1][0]);
+                      combinedBounds[1][1] = Math.max(combinedBounds[1][1], b[1][1]);
+                    }
+                    mapInstance.fitBounds(combinedBounds, { padding: 42, maxZoom: 15.2, duration: 0 });
+                  }
+                }
+              })
+              .catch(function (err) {
+                if (window.console && console.warn) console.warn("Error al cargar capa del geovisor:", lyr.id, err);
+              })
+              .finally(function () {
+                layerLoading = false;
+              });
+          }
+
           if (chk) {
             chk.disabled = false;
-            chk.checked = true;
+            chk.checked = visibleByDefault;
             chk.onchange = function () {
-              var vis = chk.checked ? "visible" : "none";
-              ["-fill", "-line", "-pt"].forEach(function (suf) {
-                if (mapInstance.getLayer(lyr.id + suf)) {
-                  mapInstance.setLayoutProperty(lyr.id + suf, "visibility", vis);
-                }
-              });
+              if (chk.checked) loadProjectLayer();
+              else setProjectLayerVisibility(false);
             };
           }
+          if (visibleByDefault) loadProjectLayer();
           var slider = document.querySelector('[data-layer-opacity="' + lyr.id + '"]');
           if (slider) {
             slider.disabled = false;

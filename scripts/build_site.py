@@ -162,7 +162,7 @@ def render_shell(
         )
         maplibre_scripts = (
             '<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" crossorigin="anonymous"></script>\n'
-            f'  <script src="{html.escape(ctx.site_url("assets/js/geovisor.js"), quote=True)}?v=2.0.5"></script>'
+            f'  <script src="{html.escape(ctx.site_url("assets/js/geovisor.js"), quote=True)}?v=2.0.6-local"></script>'
         )
 
     updated_raw = manifest["governance"].get("content_updated_at")
@@ -176,7 +176,7 @@ def render_shell(
   <title>{esc(page_title)} · {esc(short_title)}</title>
   <meta name="description" content="{esc(manifest['summary'])}">
   {robots_meta}
-  <link rel="stylesheet" href="{html.escape(ctx.site_url('assets/css/styles.css'), quote=True)}?v=2.0.5">
+  <link rel="stylesheet" href="{html.escape(ctx.site_url('assets/css/styles.css'), quote=True)}?v=2.0.6-local">
   {maplibre_head}
 </head>
 <body>
@@ -236,7 +236,7 @@ def render_shell(
     </div>
   </footer>
 
-  <script src="{html.escape(ctx.site_url('assets/js/ui.js'), quote=True)}?v=2.0.5"></script>
+  <script src="{html.escape(ctx.site_url('assets/js/ui.js'), quote=True)}?v=2.0.6-local"></script>
   {maplibre_scripts}
 </body>
 </html>
@@ -421,7 +421,7 @@ def build_geolibre_project_json(
                 "url": resolved,
                 "data": resolved if layer_type == "geojson" else None,
             },
-            "visible": True,
+            "visible": bool(lyr.get("default_visible", True)),
             "opacity": 1,
             "style": full_style,
             "metadata": {
@@ -876,7 +876,7 @@ def build_aplicacion_page(
             lid = lyr["id"]
             is_ready = bool(lyr.get("source_path")) and lyr.get("status") in ("publicado", "en_revision")
             disabled_attr = "" if is_ready else " disabled"
-            checked_attr = " checked" if is_ready else ""
+            checked_attr = " checked" if is_ready and bool(lyr.get("default_visible", True)) else ""
             hint_html = (
                 f'<div class="layer-item-meta">Ruta esperada para activar: <code>{esc(lyr.get("expected_file_hint"))}</code></div>'
                 if not is_ready and lyr.get("expected_file_hint")
