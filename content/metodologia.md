@@ -68,9 +68,9 @@ Catastro / parcelario
 
 Límites institucionales o administrativos
 
-**Datos locales, institucionales o de campo disponibles.** Datos Municipales e institucionales
+**Datos locales, institucionales o de campo disponibles.** Datos Municipales e institucionales. Se integra la información demográfica oficial de los censos de población y vivienda del INEC para el distrito de Uruca (código 10107): promedio de 3,8 personas/vivienda en 2011 (31 728 habitantes, 8 389 viviendas individuales ocupadas) y estimado de ~3,3 a 3,5 personas/vivienda en 2022 (43 484 habitantes, frente a una media cantonal y nacional de 3,1).
 
-**Datos que hacen falta.** Datos sobre censo
+**Datos que hacen falta.** Desagregación censal y microdatos específicos a nivel intramunicipal / submunicipal para el perímetro informal de La Carpio (diferenciando la dinámica interna del asentamiento respecto a la totalidad del distrito Uruca).
 
 **Enlaces relacionados.** https://geoexplora-mivah.opendata.arcgis.com/
 

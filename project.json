@@ -303,11 +303,11 @@
       "status": "declarado"
     },
     {
-      "title": "Población (censos, WorldPop)",
-      "provider": null,
-      "url": null,
-      "access": "por_confirmar",
-      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "title": "Población y vivienda (censos INEC, WorldPop)",
+      "provider": "Instituto Nacional de Estadística y Censos (INEC)",
+      "url": "https://inec.cr",
+      "access": "abierto",
+      "description": "Censo 2011 y Estimación de Población y Vivienda 2022 del INEC para el distrito Uruca (código 10107). Promedio de 3,8 personas por vivienda en 2011 y ~3,3 a 3,5 en 2022 (frente a 3,1 cantonal y nacional).",
       "status": "declarado"
     },
     {

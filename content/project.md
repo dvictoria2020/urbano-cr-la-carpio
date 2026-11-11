@@ -20,6 +20,19 @@ Ofrecer mapas, indicadores y una metodología compartida que pueda utilizarse en
 
 Gran Área Metropolitana, San José, Uruca, Asentamiento Informal La Carpio.
 
+### Línea base demográfica y habitacional distrital (INEC)
+
+Como insumo de contexto para evaluar la densificación y vulnerabilidad habitacional de La Carpio, se incorpora la caracterización censal oficial del **distrito de Uruca** (séptimo distrito del Cantón Central de San José, código INEC `10107`) según el Instituto Nacional de Estadística y Censos (INEC):
+
+- **Censo 2011 (X Censo Nacional de Población y VI de Vivienda):**
+  - **Promedio de personas por vivienda:** **3,8 personas** en viviendas individuales ocupadas con personas presentes (superior al promedio cantonal de 3,5 y nacional de 3,5).
+  - **Población censada:** 31 728 habitantes.
+  - **Viviendas individuales ocupadas:** 8 389 (de 8 769 viviendas totales).
+- **Censo / Estimación 2022 (XI Censo Nacional de Población y VII de Vivienda):**
+  - **Promedio de personas por vivienda (estimado):** **~3,3 a 3,5 personas** por vivienda ocupada.
+  - **Población distrital estimada:** 43 484 habitantes (crecimiento intercensal de +37,1 %).
+  - **Contexto comparativo:** A nivel cantonal (San José central) y nacional, el promedio descendió a **3,1 personas por vivienda**. Uruca conserva una media superior debido a sus dinámicas sociodemográficas y a la concentración de asentamientos de alta densidad (documentado en detalle en `docs/censo-uruca-linea-base.md`).
+
 ## Usuario y decisión
 
 Municipalidad de San José (Gerencia de Gestión Municipal y Desarrollo Urbano, Dirección de Desarrollo Urbano, Alcaldía Municipal), Ministerio de Vivienda y Asentamientos Humanos (Dirección de Gestión Integrada del Territorio, Dirección de Vivienda y Asentamientos Humanos), Instituto Nacional de Vivienda y Urbanismo (Departamento de Urbanismo).
