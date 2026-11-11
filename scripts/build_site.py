@@ -982,7 +982,7 @@ def build_aplicacion_page(
     body = f"""
     <div class="callout" style="margin-top:0;margin-bottom:1rem;padding:0.75rem 1rem;">
       <strong>Nota de integridad cartográfica ({esc(mv.get('scale_label', 'Escala del perfil'))})</strong>
-      <span>{esc(mv.get('reference_note'))} Los límites administrativos procedentes de fuentes abiertas (OpenStreetMap ODbL) se muestran con carácter referencial hasta su homologación institucional.</span>
+      <span>{esc(mv.get('reference_note'))}</span>
     </div>
 
     <section class="section" id="geovisor-app">
