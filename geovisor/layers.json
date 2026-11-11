@@ -17,7 +17,7 @@
       9.96309
     ],
     "is_referential": true,
-    "reference_note": "Centroide declarado en S13: 9.96309, -84.15020 (La Carpio, Uruca, San José). Atención: resolver discrepancia documental de superficie entre 48,2 ha (polígono de formulario) y ≈ 63 ha (texto narrativo) antes de calcular indicadores.",
+    "reference_note": "Centroide declarado en S13: 9.96309, -84.15020 (La Carpio, Uruca, San José). El perímetro del área de estudio procede de Limite.shp (EPSG:5367), se publica en EPSG:4326 y continúa en revisión institucional; resolver la diferencia entre el polígono del formulario (48,2 ha), la narración del perfil (~63 ha) y el área calculada de la geometría (~61 ha).",
     "area_declared": "En revisión de homologación: 48,2 ha en tabla de polígono vs. ≈ 63 ha en narración del perfil S13.",
     "scale_label": "Barrio / colonia / asentamiento"
   },
@@ -49,26 +49,8 @@
   ],
   "layers": [
     {
-      "id": "cr-carpio-referencia-osm",
-      "title": "Contorno referencial de La Carpio, La Uruca (OSM ODbL)",
-      "group": "Línea base interinstitucional",
-      "format": "geojson",
-      "geometry_type": "polygon",
-      "status": "en_revision",
-      "source_path": "geovisor/capas/la_carpio_referencia_osm.geojson",
-      "expected_file_hint": "geovisor/capas/la_carpio_referencia_osm.geojson",
-      "resolution": "Vectorial referencial (~67,6 ha, EPSG:4326)",
-      "style": {
-        "fill_color": "#007F8B",
-        "fill_opacity": 0.24,
-        "stroke_color": "#14283F",
-        "stroke_width": 2.6
-      },
-      "caveat": "Fuente externa abierta: OpenStreetMap contributors (ODbL). Contorno orientativo; el equipo interinstitucional (MSJ/INVU/MIVAH) debe acordar el polígono operativo definitivo (48,2 ha vs. 63 ha)."
-    },
-    {
       "id": "cr-carpio-perimetro",
-      "title": "Perímetro del área de estudio (en revisión)",
+      "title": "Perímetro del área de estudio",
       "group": "Línea base interinstitucional",
       "format": "geojson",
       "geometry_type": "polygon",
