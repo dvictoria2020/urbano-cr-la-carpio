@@ -68,21 +68,21 @@
     },
     {
       "id": "cr-carpio-perimetro",
-      "title": "Delimitación operativa homologada de La Carpio",
+      "title": "Perímetro del área de estudio (en revisión)",
       "group": "Línea base interinstitucional",
       "format": "geojson",
       "geometry_type": "polygon",
-      "status": "en_preparacion",
-      "source_path": null,
-      "expected_file_hint": "geovisor/capas/la_carpio_perimetro.geojson",
-      "resolution": "Vectorial municipal/institucional (EPSG:4326 desde CR-SIRGAS)",
+      "status": "en_revision",
+      "source_path": "geovisor/capas/perimetro_zona_estudio.geojson",
+      "expected_file_hint": "geovisor/capas/perimetro_zona_estudio.geojson",
+      "resolution": "Polígono vectorial; origen EPSG:5367, visualización EPSG:4326; área calculada ~61,0 ha",
       "style": {
         "fill_color": "#007F8B",
-        "fill_opacity": 0.15,
+        "fill_opacity": 0.12,
         "stroke_color": "#14283F",
         "stroke_width": 2.5
       },
-      "caveat": "Debe documentar el acuerdo entre MSJ, INVU y MIVAH sobre las referencias de 48,2 ha y 63 ha."
+      "caveat": "Derivado del archivo local Limite.shp. El perímetro está en revisión y requiere homologación interinstitucional; el área calculada (~61,0 ha) difiere de las 48,2 ha del formulario."
     },
     {
       "id": "cr-carpio-cobertura-ndvi",
