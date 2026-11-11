@@ -24,8 +24,10 @@ from site_common import (
     compute_site_context,
     esc,
     format_spanish_date,
+    render_hero_team,
     render_project_institutions_band,
     render_regional_institutional_band,
+    render_team_section_html,
     render_upper_institutional_bar,
 )
 
@@ -160,7 +162,7 @@ def render_shell(
         )
         maplibre_scripts = (
             '<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" crossorigin="anonymous"></script>\n'
-            f'  <script src="{html.escape(ctx.site_url("assets/js/geovisor.js"), quote=True)}?v=2.0.2"></script>'
+            f'  <script src="{html.escape(ctx.site_url("assets/js/geovisor.js"), quote=True)}?v=2.0.5"></script>'
         )
 
     updated_raw = manifest["governance"].get("content_updated_at")
@@ -174,7 +176,7 @@ def render_shell(
   <title>{esc(page_title)} · {esc(short_title)}</title>
   <meta name="description" content="{esc(manifest['summary'])}">
   {robots_meta}
-  <link rel="stylesheet" href="{html.escape(ctx.site_url('assets/css/styles.css'), quote=True)}?v=2.0.2">
+  <link rel="stylesheet" href="{html.escape(ctx.site_url('assets/css/styles.css'), quote=True)}?v=2.0.5">
   {maplibre_head}
 </head>
 <body>
@@ -234,7 +236,7 @@ def render_shell(
     </div>
   </footer>
 
-  <script src="{html.escape(ctx.site_url('assets/js/ui.js'), quote=True)}?v=2.0.2"></script>
+  <script src="{html.escape(ctx.site_url('assets/js/ui.js'), quote=True)}?v=2.0.5"></script>
   {maplibre_scripts}
 </body>
 </html>
@@ -554,7 +556,7 @@ def build_home_page(
           {badge_html(manifest['pmv']['scope_status'], 'Alcance PMV')}
         </div>
         <h1>{esc(manifest['title'])}</h1>
-        <p class="hero-author" style="margin: 0 0 0.85rem; font-size: 1.15rem; color: #a3e635; font-weight: 500;">Victoria Delgado Fernández</p>
+        {render_hero_team(manifest)}
         <p class="hero-lead">{esc(manifest['summary'])}</p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="{html.escape(ctx.site_url('aplicacion/'), quote=True)}">Abrir Geovisor (GeoLibre)</a>
@@ -626,6 +628,8 @@ def build_home_page(
         </article>
       </div>
     </section>
+
+    {render_team_section_html(manifest)}
 
     <section class="section">
       <div class="grid-2">
@@ -728,6 +732,37 @@ def build_proyecto_page(
     support_url = f"{repo_url}/issues/new?template=02-bloqueo-apoyo.yml" if repo_url else ctx.site_url("colaborar/")
     colaborar_logos_href = ctx.site_url("colaborar/") + "#anadir-actualizar-logos"
 
+    figuras_dir = ROOT / "web" / "assets" / "img" / "figuras"
+    figuras_html = ""
+    if figuras_dir.is_dir():
+        fig_files = sorted(
+            f for f in figuras_dir.iterdir()
+            if f.is_file() and f.suffix.lower() in (".png", ".jpg", ".jpeg", ".svg", ".webp")
+        )
+        if fig_files:
+            fig_cards = []
+            for ff in fig_files:
+                f_url = html.escape(ctx.site_url(f"assets/img/figuras/{ff.name}"), quote=True)
+                f_label = esc(ff.stem.replace("_", " ").capitalize())
+                fig_cards.append(
+                    f"""
+                    <article class="card">
+                      <span class="badge badge-ok">Evidencia gráfica del repositorio</span>
+                      <h3 style="margin:0.35rem 0 0.5rem;font-size:1rem;">{f_label}</h3>
+                      <a href="{f_url}" target="_blank" rel="noopener noreferrer" style="display:block;border:1px solid var(--c-border);border-radius:8px;overflow:hidden;background:#070A14;">
+                        <img src="{f_url}" alt="{f_label}" style="width:100%;height:auto;display:block;" loading="lazy">
+                      </a>
+                    </article>
+                    """
+                )
+            figuras_html = f"""
+            <section class="section">
+              <h2>Figuras y visualizaciones analíticas incorporadas por el equipo</h2>
+              <p>Gráficos y salidas analíticas generadas a partir de los scripts del proyecto en <code>src/</code> y almacenadas en <code>web/assets/img/figuras/</code>:</p>
+              <div class="grid-2">{"".join(fig_cards)}</div>
+            </section>
+            """
+
     hero = f"""
     <section class="hero">
       <div class="container">
@@ -736,11 +771,13 @@ def build_proyecto_page(
           <span class="badge badge-country">{esc(manifest['id'])}</span>
         </div>
         <h1>{esc(manifest['title'])}</h1>
-        <p class="hero-author" style="margin: 0 0 0.85rem; font-size: 1.15rem; color: #a3e635; font-weight: 500;">Victoria Delgado Fernández</p>
+        {render_hero_team(manifest)}
         <p class="hero-lead">Alcance territorial en {esc(manifest['territory']['label'])}, criterios del PMV, instituciones participantes y trazabilidad documental desde <code>project.json</code>.</p>
       </div>
     </section>
     """
+
+    team_names_str = ", ".join(m.get("name", "") for m in (manifest.get("team") or []) if isinstance(m, dict) and m.get("name")) or "Por confirmar"
 
     body = f"""
     {render_status_strip(manifest)}
@@ -751,6 +788,7 @@ def build_proyecto_page(
         <div class="grid-3">
           <div>
             <p><strong>Instituciones participantes:</strong><br>{esc(", ".join(manifest["institutional_use"].get("institutions", [])), "Por confirmar")}</p>
+            <p><strong>Integrantes del equipo:</strong><br>{esc(team_names_str)}</p>
             <p><strong>Responsabilidad funcional:</strong><br>Equipo técnico de la iniciativa ({esc(manifest['country']['name'])}) · Coordinación regional del Clúster Urbano.</p>
           </div>
           <div>
@@ -958,15 +996,89 @@ def build_aplicacion_page(
           </div>
 
           <div class="geovisor-panel is-active" data-gv-panel="layers">
-            <div class="filter-field" style="margin-bottom:0.75rem;">
-              <label for="gv-basemap-select">Mapa base de referencia</label>
+            <div class="filter-field" style="margin-bottom:0.5rem;">
+              <label for="gv-basemap-select">Catálogo de Mapas Base Copernicus y Derivados (23 capas abiertas)</label>
               <select id="gv-basemap-select">
-                <option value="carto-positron">Mapa Claro Vectorial (OpenFreeMap)</option>
-                <option value="osm-standard">OpenStreetMap Estándar</option>
-                <option value="carto-dark">Modo Oscuro Vectorial (OpenFreeMap)</option>
-                <option value="esri-imagery">Imagen Satelital (Referencia visual)</option>
+                <optgroup label="1. Modelo Digital de Elevación Oficial Copernicus DEM (GLO-30 · 30 m)">
+                  <option value="copernicus-dem-glo30">Copernicus DEM GLO-30 (30 m · Elevación Hipsométrica + Sombreado)</option>
+                  <option value="copernicus-dem-hillshade">Copernicus DEM GLO-30 (30 m · Sombreado de Relieve / Hillshade)</option>
+                  <option value="copernicus-dem-viridis">Copernicus DEM GLO-30 (30 m · Hipsometría Viridis + Curvas de Nivel)</option>
+                </optgroup>
+                <optgroup label="2. Cobertura Terrestre y Mancha Urbana 10 m (Sentinel-1 + Sentinel-2)">
+                  <option value="esa-worldcover-2021">ESA WorldCover 10 m (2021 v200 · Mancha Urbana y Cobertura)</option>
+                  <option value="esa-worldcover-2020">ESA WorldCover 10 m (2020 v100 · Mancha Urbana y Cobertura)</option>
+                  <option value="s2-lulc-2023">Uso y Cobertura del Suelo Sentinel-2 10 m (Año 2023 · 9 clases)</option>
+                  <option value="s2-lulc-2022">Uso y Cobertura del Suelo Sentinel-2 10 m (Año 2022 · 9 clases)</option>
+                  <option value="s2-lulc-2021">Uso y Cobertura del Suelo Sentinel-2 10 m (Año 2021 · 9 clases)</option>
+                  <option value="s2-lulc-2020">Uso y Cobertura del Suelo Sentinel-2 10 m (Año 2020 · 9 clases)</option>
+                  <option value="s2-lulc-2019">Uso y Cobertura del Suelo Sentinel-2 10 m (Año 2019 · 9 clases)</option>
+                  <option value="s2-lulc-2018">Uso y Cobertura del Suelo Sentinel-2 10 m (Año 2018 · 9 clases)</option>
+                  <option value="s2-lulc-2017">Uso y Cobertura del Suelo Sentinel-2 10 m (Año 2017 · Línea base)</option>
+                </optgroup>
+                <optgroup label="3. Índices Espectrales y Bandas Copernicus Sentinel-2 L2A (10 m / 20 m)">
+                  <option value="s2-l2a-ndvi">Sentinel-2 L2A · Índice de Vegetación Urbana (NDVI · 10 m)</option>
+                  <option value="s2-l2a-ndbi">Sentinel-2 L2A · Índice de Edificación / Área Construida (NDBI · 20 m)</option>
+                  <option value="s2-l2a-ndwi">Sentinel-2 L2A · Índice de Humedad Superficial (NDWI · 20 m)</option>
+                  <option value="s2-l2a-falsecolor">Sentinel-2 L2A · Falso Color Infrarrojo (B08-B04-B03 · 10 m)</option>
+                  <option value="s2-l2a-swir">Sentinel-2 L2A · SWIR Urbano (B12-B8A-B04 · 20 m)</option>
+                </optgroup>
+                <optgroup label="4. Radar de Apertura Sintética Copernicus Sentinel-1 SAR RTC (10 m · Sin Nubes)">
+                  <option value="s1-rtc-falsecolor">Copernicus Sentinel-1 SAR RTC (10 m · Compuesto Urbano VV+VH)</option>
+                  <option value="s1-rtc-vv">Copernicus Sentinel-1 SAR RTC (10 m · Polarización VV Escala de Grises)</option>
+                </optgroup>
+                <optgroup label="5. Agua Superficial e Inundaciones (JRC Comisión Europea / Copernicus)">
+                  <option value="jrc-gsw-occurrence">JRC Agua Superficial · Ocurrencia Histórica e Inundación (1984–2021)</option>
+                  <option value="jrc-gsw-extent">JRC Agua Superficial · Extensión Máxima de Agua / Inundación</option>
+                </optgroup>
+                <optgroup label="6. Mosaicos Anuales Ópticos Copernicus Sentinel-2 Cloudless (2018–2024)">
+                  <option value="sentinel2-2024">Copernicus Sentinel-2 Cloudless (Mosaico 2024 · EOX)</option>
+                  <option value="sentinel2-2023">Copernicus Sentinel-2 Cloudless (Mosaico 2023 · EOX)</option>
+                  <option value="sentinel2-2022">Copernicus Sentinel-2 Cloudless (Mosaico 2022 · EOX)</option>
+                  <option value="sentinel2-2021">Copernicus Sentinel-2 Cloudless (Mosaico 2021 · EOX)</option>
+                  <option value="sentinel2-2020">Copernicus Sentinel-2 Cloudless (Mosaico 2020 · EOX)</option>
+                  <option value="sentinel2-2019">Copernicus Sentinel-2 Cloudless (Mosaico 2019 · EOX)</option>
+                  <option value="sentinel2-2018">Copernicus Sentinel-2 Cloudless (Mosaico 2018 · EOX)</option>
+                </optgroup>
+                <optgroup label="7. Mapas Base Vectoriales y Referencia Cartográfica">
+                  <option value="carto-positron" selected>Mapa Claro Vectorial (OpenFreeMap)</option>
+                  <option value="osm-standard">OpenStreetMap Estándar</option>
+                  <option value="carto-dark">Modo Oscuro Vectorial (OpenFreeMap)</option>
+                  <option value="esri-imagery">Imagen Satelital de Alta Resolución (Esri)</option>
+                </optgroup>
               </select>
             </div>
+
+            <div style="margin-bottom:0.75rem;background:#F3F6FD;border:1px solid var(--c-border);border-radius:6px;padding:0.5rem 0.6rem;">
+              <div style="font-size:0.74rem;font-weight:700;color:var(--c-brand-blue);margin-bottom:0.38rem;">🛰️ Acceso directo por familia Copernicus (Sin API Key):</div>
+              <div style="display:flex;flex-wrap:wrap;gap:0.3rem;">
+                <button type="button" class="btn btn-outline btn-xs" data-basemap-quick="copernicus-dem-glo30" title="Copernicus DEM GLO-30 (30 m · Elevación Hipsométrica + Sombreado)">⛰️ DEM GLO-30</button>
+                <button type="button" class="btn btn-outline btn-xs" data-basemap-quick="copernicus-dem-hillshade" title="Copernicus DEM GLO-30 (30 m · Sombreado de Relieve / Hillshade)">⛰️ Hillshade</button>
+                <button type="button" class="btn btn-outline btn-xs" data-basemap-quick="esa-worldcover-2021" title="ESA WorldCover 10 m (Mancha urbana y cobertura derivada de Sentinel-1 y Sentinel-2)">🏙️ WorldCover 10m</button>
+                <button type="button" class="btn btn-outline btn-xs" data-basemap-quick="s2-lulc-2023" title="Uso y Cobertura del Suelo Sentinel-2 10 m (2023)">🏙️ LULC 2023</button>
+                <button type="button" class="btn btn-outline btn-xs" data-basemap-quick="s2-l2a-ndvi" title="Sentinel-2 L2A Índice de Vegetación Urbana (NDVI · 10 m)">🌿 NDVI</button>
+                <button type="button" class="btn btn-outline btn-xs" data-basemap-quick="s2-l2a-ndbi" title="Sentinel-2 L2A Índice de Edificación / Área Construida (NDBI · 20 m)">🏗️ NDBI</button>
+                <button type="button" class="btn btn-outline btn-xs" data-basemap-quick="s1-rtc-falsecolor" title="Radar de Apertura Sintética Copernicus Sentinel-1 SAR RTC (10 m · VV+VH)">📡 Radar S1</button>
+                <button type="button" class="btn btn-outline btn-xs" data-basemap-quick="jrc-gsw-occurrence" title="JRC Agua Superficial e Inundación (Comisión Europea)">🌊 JRC Agua</button>
+                <button type="button" class="btn btn-outline btn-xs" data-basemap-quick="sentinel2-2024" title="Mosaico anual abierto Copernicus Sentinel-2 Cloudless 2024">🛰️ S2 2024</button>
+                <button type="button" class="btn btn-outline btn-xs" data-basemap-quick="sentinel2-2018" title="Mosaico anual abierto Copernicus Sentinel-2 Cloudless 2018">🛰️ S2 2018</button>
+                <button type="button" class="btn btn-teal btn-xs" data-basemap-quick="carto-positron" title="Mapa Claro Vectorial de Referencia">🗺️ Vectorial</button>
+              </div>
+              <div id="gv-basemap-legend" style="margin-top:0.42rem;padding-top:0.35rem;border-top:1px dashed var(--c-border);font-size:0.73rem;color:var(--c-text-muted);line-height:1.35;">
+                🗺️ Mapa base vectorial de referencia cartográfica (OpenFreeMap / OpenStreetMap)
+              </div>
+            </div>
+
+            <div style="margin-bottom:0.65rem;padding:0.45rem 0.6rem;background:#FFFDF5;border:1px solid #E5D48A;border-radius:6px;">
+              <label style="display:flex;align-items:center;gap:0.45rem;font-size:0.8rem;font-weight:700;color:var(--c-brand-blue);">
+                <input type="checkbox" id="gv-toggle-mask" checked>
+                <span>Enmascarar fuera del límite de zona de estudio</span>
+              </label>
+              <div style="display:flex;align-items:center;gap:0.45rem;margin-top:0.3rem;font-size:0.74rem;color:var(--c-text-muted);">
+                <span>Opacidad máscara:</span>
+                <input type="range" id="gv-mask-opacity" min="0" max="1" step="0.05" value="0.88" style="flex:1;" aria-label="Opacidad de máscara exterior">
+              </div>
+            </div>
+
             <label style="display:flex;align-items:center;gap:0.45rem;font-size:0.83rem;font-weight:600;margin-bottom:0.6rem;">
               <input type="checkbox" id="gv-toggle-ref-marker" checked>
               <span>Mostrar marcador de centroide referencial</span>
@@ -1011,8 +1123,11 @@ def build_aplicacion_page(
           <div class="geovisor-toolbar">
             <div><strong>{esc(layers_cfg.get('title', manifest['title']))}</strong> · Motor MapLibre / GeoLibre</div>
             <div class="geovisor-toolbar-actions">
+              <button type="button" id="gv-toggle-fullscreen" class="btn btn-teal btn-xs" title="Ver el geovisor en pantalla completa (Esc para salir)">⛶ Pantalla completa</button>
+              <button type="button" id="gv-toggle-sidebar" class="btn btn-outline-light btn-xs" title="Ocultar o mostrar el panel lateral de capas">⇄ Panel lateral</button>
               <button type="button" id="gv-open-folder-tab" class="btn btn-outline-light btn-xs">Cargar desde carpeta</button>
               <button type="button" id="gv-reset-view" class="btn btn-outline-light btn-xs">Encuadre inicial</button>
+              <a class="btn btn-outline-light btn-xs" href="{html.escape(ctx.site_url('assets/descargas/atlas_copernicus_zona_estudio.pdf'), quote=True)}" download="Atlas_Copernicus_{esc(pid)}.pdf" title="Descargar Atlas Temático Copernicus con identidad gráfica institucional en PDF">📥 Atlas PDF</a>
               <a class="btn btn-outline-light btn-xs" href="{geolibre_json_href}">JSON GeoLibre</a>
               <a id="btn-open-geolibre-studio" class="btn btn-primary btn-xs" href="{html.escape(studio_open_href, quote=True)}" target="_blank" rel="noopener noreferrer">Abrir en GeoLibre Studio ↗</a>
             </div>
@@ -1117,6 +1232,37 @@ def build_metodologia_page(
     lim_li = "".join(f"<li>{esc(l)}</li>" for l in manifest.get("limitations", [])) or "<li>Sin limitaciones adicionales registradas.</li>"
     colaborar_logos_href = ctx.site_url("colaborar/") + "#anadir-actualizar-logos"
 
+    figuras_dir = ROOT / "web" / "assets" / "img" / "figuras"
+    figuras_html = ""
+    if figuras_dir.is_dir():
+        fig_files = sorted(
+            f for f in figuras_dir.iterdir()
+            if f.is_file() and f.suffix.lower() in (".png", ".jpg", ".jpeg", ".svg", ".webp")
+        )
+        if fig_files:
+            fig_cards = []
+            for ff in fig_files:
+                f_url = html.escape(ctx.site_url(f"assets/img/figuras/{ff.name}"), quote=True)
+                f_label = esc(ff.stem.replace("_", " ").capitalize())
+                fig_cards.append(
+                    f"""
+                    <article class="card">
+                      <span class="badge badge-ok">Evidencia gráfica del repositorio</span>
+                      <h3 style="margin:0.35rem 0 0.5rem;font-size:1rem;">{f_label}</h3>
+                      <a href="{f_url}" target="_blank" rel="noopener noreferrer" style="display:block;border:1px solid var(--c-border);border-radius:8px;overflow:hidden;background:#070A14;">
+                        <img src="{f_url}" alt="{f_label}" style="width:100%;height:auto;display:block;" loading="lazy">
+                      </a>
+                    </article>
+                    """
+                )
+            figuras_html = f"""
+            <section class="section">
+              <h2>Figuras y visualizaciones analíticas incorporadas por el equipo</h2>
+              <p>Gráficos y salidas analíticas generadas a partir de los scripts del proyecto en <code>src/</code> y almacenadas en <code>web/assets/img/figuras/</code>:</p>
+              <div class="grid-2">{"".join(fig_cards)}</div>
+            </section>
+            """
+
     hero = f"""
     <section class="hero">
       <div class="container">
@@ -1163,6 +1309,403 @@ def build_metodologia_page(
     )
 
 
+def render_copernicus_study_area_atlas_section(
+    territory_label: str,
+    initial_center: list[float],
+    initial_zoom: float,
+    ctx: SiteContext | None = None,
+    pid: str = "zona-estudio",
+) -> str:
+    center_attr = html.escape(json.dumps(initial_center), quote=True)
+    pdf_href = html.escape(
+        ctx.site_url("assets/descargas/atlas_copernicus_zona_estudio.pdf") if ctx else "../assets/descargas/atlas_copernicus_zona_estudio.pdf",
+        quote=True,
+    )
+    pdf_dl_name = f"Atlas_Copernicus_{pid}.pdf"
+    plates_meta = [
+        (
+            "sentinel2-cloudless",
+            "Lámina 1",
+            "🛰️ 1. Mosaicos Anuales Sentinel-2 (2018–2024)",
+            "Mosaicos Anuales sin Nubes Copernicus Sentinel-2 Cloudless (Serie 2018–2024 · 10 m)",
+            "Compuestos ópticos anuales en color verdadero libres de nubes para comparar visualmente la evolución física urbana entre 2018 y 2024.",
+            [
+                ("sentinel2-2024", "2024"),
+                ("sentinel2-2023", "2023"),
+                ("sentinel2-2022", "2022"),
+                ("sentinel2-2021", "2021"),
+                ("sentinel2-2020", "2020"),
+                ("sentinel2-2019", "2019"),
+                ("sentinel2-2018", "2018 (Base)"),
+            ],
+            [
+                ("#E8ECEF", "Blanco / Gris brillante", "Techos industriales, comerciales, concreto nuevo y cubiertas metálicas."),
+                ("#9BA3AE", "Gris medio / Trama urbana", "Tejido residencial consolidado y red vial pavimentada."),
+                ("#D29D6A", "Ocre / Terracota / Marrón", "Suelo desnudo en apertura urbana, taludes o techos de teja/lámina."),
+                ("#1E5631", "Verde bosque oscuro", "Dosel arbóreo denso, bosques de galería en cañones y manglares."),
+                ("#76B041", "Verde claro / Herbáceo", "Parques urbanos, pastizales y cultivos periurbanos."),
+                ("#0F3A5D", "Azul marino / Turquesa", "Ríos principales, lagos, embalses y aguas costeras."),
+            ],
+        ),
+        (
+            "copernicus-dem-glo30",
+            "Lámina 2",
+            "⛰️ 2. Geomorfología y Pendientes (DEM 30 m)",
+            "Copernicus DEM GLO-30 (30 m · Hipsometría, Hillshade y Curvas de Nivel)",
+            "Identifica valles, terrazas aluviales, mesetas y cañones escarpados donde la expansión urbana enfrenta susceptibilidad a deslizamientos o escorrentía concentrada.",
+            [
+                ("copernicus-dem-glo30", "Hipsometría + Hillshade"),
+                ("copernicus-dem-hillshade", "Solo Hillshade 30 m"),
+                ("copernicus-dem-viridis", "Viridis + Curvas de Nivel"),
+            ],
+            [
+                ("#336699", "0 – 150 m s. n. m.", "Planicies bajas, zonas costeras y llanuras de inundación."),
+                ("#56A862", "150 – 500 m s. n. m.", "Terrazas aluviales y valles intramontanos de pendiente suave."),
+                ("#E6C267", "500 – 1200 m s. n. m.", "Piedemonte, mesetas intermedias y laderas moderadas."),
+                ("#A66A43", "> 1200 m s. n. m.", "Escarpes pronunciados, cordilleras y divisorias de cuenca."),
+                ("#3A3F4B", "Sombreado Hillshade 30 m", "Barrancos, taludes y laderas de fuerte pendiente (>25%)."),
+            ],
+        ),
+        (
+            "esa-worldcover-2021",
+            "Lámina 3",
+            "🏙️ 3. Cobertura y Mancha Urbana 10 m (WorldCover)",
+            "ESA WorldCover 10 m (Fusión Sentinel-1 + Sentinel-2 · Ediciones 2021 y 2020)",
+            "Separa con resolución de 10 m la huella edificada e impermeable (#FA0000) de los bosques urbanos, pastizales, cultivos, manglares y cuerpos de agua.",
+            [
+                ("esa-worldcover-2021", "Año 2021 (v200)"),
+                ("esa-worldcover-2020", "Año 2020 (v100)"),
+            ],
+            [
+                ("#FA0000", "Edificado / Mancha Urbana", "Techos, pavimento vial, concreto y tejido urbano consolidado."),
+                ("#006400", "Cobertura Arbórea", "Bosques urbanos, parques, bosques de galería y arbolado denso."),
+                ("#FFBB22", "Arbustos y Matorral", "Vegetación leñosa baja y laderas en regeneración."),
+                ("#FFFF4C", "Pastizales y Herbáceas", "Áreas verdes abiertas, lotes baldíos con pasto y praderas."),
+                ("#F096FF", "Cultivos Agrícolas", "Borde agrourbano sujeto a presión por expansión residencial."),
+                ("#B4B4B4", "Suelo Desnudo / Expuesto", "Terrenos en movimiento de tierra, taludes o trazados en apertura."),
+                ("#0064C8", "Agua Permanente y Manglar", "Ríos, lagos, esteros (#0064C8) y manglares costeros (#00CF75)."),
+            ],
+        ),
+        (
+            "s2-lulc-2023",
+            "Lámina 4",
+            "📈 4. Uso del Suelo Anual 10 m (LULC 2017–2023)",
+            "Serie Anual de Uso del Suelo y Expansión Urbana Sentinel-2 10 m (2017–2023)",
+            "Permite medir año por año (2017 a 2023) el crecimiento del área construida consolidada (#C4281B) sobre suelos agrícolas, pastizales y bosques periurbanos.",
+            [
+                ("s2-lulc-2023", "2023"),
+                ("s2-lulc-2022", "2022"),
+                ("s2-lulc-2021", "2021"),
+                ("s2-lulc-2020", "2020"),
+                ("s2-lulc-2019", "2019"),
+                ("s2-lulc-2018", "2018"),
+                ("s2-lulc-2017", "2017 (Base)"),
+            ],
+            [
+                ("#C4281B", "Área Construida (Built Area)", "Asentamientos humanos, tejido residencial, comercial e industrial."),
+                ("#397D49", "Árboles y Bosque Denso", "Remanentes forestales y reservas ecológicas periurbanas."),
+                ("#E49635", "Cultivos", "Superficie agrícola en transición urbano-rural."),
+                ("#DFC35A", "Matorral / Rangeland", "Vegetación arbustiva y herbácea abierta."),
+                ("#A59B8F", "Suelo Desnudo", "Superficies sin cobertura vegetal o en explanación."),
+                ("#419BDF", "Agua y Humedales", "Cuerpos de agua (#419BDF) y vegetación inundable (#88B053)."),
+            ],
+        ),
+        (
+            "s2-l2a-ndvi",
+            "Lámina 5",
+            "🌿 5. Vegetación Urbana e Islas Verdes (NDVI)",
+            "Copernicus Sentinel-2 L2A · Índice NDVI 10 m (Serie Multitemporal)",
+            "Mide el vigor fotosintético ((B08-B04)/(B08+B04)) para localizar el déficit de áreas verdes intraurbanas y los corredores biológicos que mitigan islas de calor.",
+            [
+                ("s2-l2a-ndvi", "Reciente"),
+                ("s2-l2a-ndvi-2024", "2024"),
+                ("s2-l2a-ndvi-2023", "2023"),
+                ("s2-l2a-ndvi-2022", "2022"),
+                ("s2-l2a-ndvi-2021", "2021"),
+                ("s2-l2a-ndvi-2020", "2020"),
+                ("s2-l2a-ndvi-2019", "2019"),
+                ("s2-l2a-ndvi-2018", "2018"),
+            ],
+            [
+                ("#A50026", "NDVI < 0.05 (Rojo intenso)", "Techos, asfalto, concreto sellado o cuerpos de agua."),
+                ("#F46D43", "NDVI 0.05 – 0.20 (Naranja)", "Tejido urbano denso con escaso o nulo arbolado viario."),
+                ("#FEE08B", "NDVI 0.20 – 0.38 (Amarillo)", "Zonas residenciales mixtas con jardines dispersos o pasto seco."),
+                ("#66BD63", "NDVI 0.38 – 0.60 (Verde claro)", "Parques urbanos, bulevares arbolados y huertos periurbanos."),
+                ("#006837", "NDVI > 0.60 (Verde oscuro)", "Dosel forestal denso en cañones, riberas y áreas protegidas."),
+            ],
+        ),
+        (
+            "s2-l2a-ndbi",
+            "Lámina 6",
+            "🏗️ 6. Densidad Edificada e Impermeabilización (NDBI)",
+            "Copernicus Sentinel-2 L2A · Índice NDBI 20 m (Serie Multitemporal)",
+            "Evalúa la reflectancia en el infrarrojo de onda corta ((B11-B08)/(B11+B08)) para resaltar techos densos, concreto y suelo compactado.",
+            [
+                ("s2-l2a-ndbi", "Reciente"),
+                ("s2-l2a-ndbi-2024", "2024"),
+                ("s2-l2a-ndbi-2023", "2023"),
+                ("s2-l2a-ndbi-2022", "2022"),
+                ("s2-l2a-ndbi-2021", "2021"),
+                ("s2-l2a-ndbi-2020", "2020"),
+                ("s2-l2a-ndbi-2019", "2019"),
+                ("s2-l2a-ndbi-2018", "2018"),
+            ],
+            [
+                ("#FCFFA4", "NDBI > +0.15 (Amarillo claro)", "Alta concentración de techos metálicos/concreto, naves o suelo expuesto."),
+                ("#F98E09", "NDBI 0.00 a +0.15 (Naranja)", "Tejido urbano consolidado con alta impermeabilización."),
+                ("#AC2F5E", "NDBI -0.15 a 0.00 (Magenta)", "Zonas residenciales de densidad media con patios arborizados."),
+                ("#1B0C41", "NDBI < -0.15 (Violeta/Negro)", "Cobertura vegetal densa y cuerpos de agua permeables."),
+            ],
+        ),
+        (
+            "s2-l2a-ndwi",
+            "Lámina 7",
+            "💧 7. Humedad Superficial y Estrés Térmico (NDWI)",
+            "Copernicus Sentinel-2 L2A · Índice NDWI 20 m (Serie Multitemporal)",
+            "Contrasta las zonas de retención hídrica y enfriamiento evaporativo (azul) frente a las superficies urbanas secas y calientes (rojo).",
+            [
+                ("s2-l2a-ndwi", "Reciente"),
+                ("s2-l2a-ndwi-2024", "2024"),
+                ("s2-l2a-ndwi-2023", "2023"),
+                ("s2-l2a-ndwi-2022", "2022"),
+                ("s2-l2a-ndwi-2021", "2021"),
+                ("s2-l2a-ndwi-2020", "2020"),
+                ("s2-l2a-ndwi-2019", "2019"),
+                ("s2-l2a-ndwi-2018", "2018"),
+            ],
+            [
+                ("#053061", "NDWI > +0.25 (Azul marino)", "Cuerpos de agua, humedales y riberas con alta humedad."),
+                ("#4393C3", "NDWI +0.05 a +0.25 (Azul)", "Vegetación hidratada y suelos húmedos."),
+                ("#F7F7F7", "NDWI -0.05 a +0.05 (Blanco)", "Humedad superficial intermedia."),
+                ("#D6604D", "NDWI -0.20 a -0.05 (Salmón)", "Zonas urbanizadas secas o vegetación con estrés hídrico."),
+                ("#67001F", "NDWI < -0.20 (Rojo oscuro)", "Superficies urbanas impermeables y secas con alta carga térmica."),
+            ],
+        ),
+        (
+            "s2-l2a-composites",
+            "Lámina 8",
+            "🔬 8. Falso Color Infrarrojo y SWIR Urbano (S2 L2A)",
+            "Compuestos Multiespectrales Infrarrojo (B08-B04-B03) y SWIR Urbano (B12-B8A-B04)",
+            "Combina las bandas VNIR y SWIR de Sentinel-2 L2A para discriminar techos, concreto y suelo expuesto frente al vigor vegetal y cuerpos de agua.",
+            [
+                ("s2-l2a-falsecolor", "IR B08-B04-B03 (Reciente)"),
+                ("s2-l2a-falsecolor-2024", "IR 2024"),
+                ("s2-l2a-falsecolor-2022", "IR 2022"),
+                ("s2-l2a-falsecolor-2020", "IR 2020"),
+                ("s2-l2a-swir", "SWIR Urbano (Reciente)"),
+                ("s2-l2a-swir-2024", "SWIR 2024"),
+                ("s2-l2a-swir-2022", "SWIR 2022"),
+                ("s2-l2a-swir-2020", "SWIR 2020"),
+            ],
+            [
+                ("#D32F2F", "Rojo escarlata (En modo IR)", "Vegetación vigorosa y bosques urbanos con alta reflectancia NIR (B08)."),
+                ("#90CAF9", "Azul cian / Gris (En modo IR)", "Tejido urbano denso, techos, pavimento vial y concreto."),
+                ("#BA68C8", "Magenta / Púrpura (En modo SWIR)", "Huella urbana consolidada y materiales de construcción en onda corta (B12)."),
+                ("#2E7D32", "Verde esmeralda (En modo SWIR)", "Cobertura vegetal densa e hidratada."),
+            ],
+        ),
+        (
+            "s1-rtc-falsecolor",
+            "Lámina 9",
+            "📡 9. Morfología Urbana por Radar (Sentinel-1 SAR)",
+            "Copernicus Sentinel-1 SAR RTC (10 m · Compuesto VV+VH y Polarización VV)",
+            "Observación radar todo-tiempo (sin nubes): detecta construcciones por rebote doble (double-bounce) y distingue vegetación de láminas de agua.",
+            [
+                ("s1-rtc-falsecolor", "VV+VH Urbano (Reciente)"),
+                ("s1-rtc-falsecolor-2024", "VV+VH 2024"),
+                ("s1-rtc-falsecolor-2022", "VV+VH 2022"),
+                ("s1-rtc-falsecolor-2020", "VV+VH 2020"),
+                ("s1-rtc-vv", "Polarización VV (Grises)"),
+                ("s1-rtc-vv-2024", "VV Grises 2024"),
+                ("s1-rtc-vv-2020", "VV Grises 2020"),
+            ],
+            [
+                ("#FFF59D", "Amarillo / Blanco brillante", "Rebote doble intenso: edificaciones densas, estructuras y taludes."),
+                ("#4CAF50", "Verde intenso (Alto VH)", "Dispersión volumétrica en dosel arbóreo y vegetación rugosa."),
+                ("#5C6BC0", "Azul / Añil intermedio", "Suelos agrícolas, pastizales bajos o superficies semirrugosas."),
+                ("#0D1B2A", "Azul oscuro / Negro", "Espejos de agua calma (ríos, lagos, mar) o zonas urbanas anegadas."),
+            ],
+        ),
+        (
+            "jrc-gsw-occurrence",
+            "Lámina 10",
+            "🌊 10. Agua Superficial e Inundación (JRC)",
+            "EC JRC / Copernicus Global Surface Water (Ocurrencia y Extensión Máxima)",
+            "Muestra la frecuencia histórica de agua superficial e inundaciones (1984–2021) y la huella máxima de desbordamiento.",
+            [
+                ("jrc-gsw-occurrence", "Ocurrencia Histórica (0–100%)"),
+                ("jrc-gsw-extent", "Extensión Máxima de Inundación"),
+            ],
+            [
+                ("#0000FF", "80% – 100% Ocurrencia (Azul)", "Cauces permanentes de ríos, lagos, embalses y línea de costa."),
+                ("#8844CC", "25% – 80% Ocurrencia (Violeta)", "Cuerpos de agua estacionales, esteros y barras fluviales."),
+                ("#FF3366", "1% – 25% Ocurrencia (Rosa)", "Llanuras de inundación episódica durante eventos hidrometeorológicos."),
+                ("#D9DFEA", "Relieve base emergido", "Terreno sin lámina de agua detectada a escala satelital."),
+            ],
+        ),
+    ]
+
+    tabs_html = []
+    cards_html = []
+    for idx, (pk, pnum, pshort, ptitle, preading, pvariants, pswatches) in enumerate(plates_meta):
+        active_cls = " is-active" if idx == 0 else ""
+        tabs_html.append(
+            f'<button type="button" class="atlas-plate-tab{active_cls}" data-atlas-plate="{esc(pk)}">{esc(pshort)}</button>'
+        )
+        var_pills = "".join(
+            f'<button type="button" class="atlas-variant-pill" data-atlas-plate-select="{esc(pk)}" data-atlas-variant-select="{esc(vk)}">{esc(vlbl)}</button>'
+            for vk, vlbl in pvariants
+        )
+        sw_rows = "".join(
+            f'<li class="atlas-swatch-item">'
+            f'<span class="atlas-swatch-chip" style="background:{esc(c)};"></span>'
+            f'<span class="atlas-swatch-label">{esc(lbl)}</span>'
+            f'<span class="atlas-swatch-desc">{esc(d)}</span>'
+            f"</li>"
+            for c, lbl, d in pswatches
+        )
+        cards_html.append(
+            f"""
+            <article class="card" style="border-top:3px solid var(--c-brand-blue);display:flex;flex-direction:column;justify-content:space-between;">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:0.4rem;margin-bottom:0.4rem;">
+                  <span class="badge badge-lime">{esc(pnum)} · {len(pvariants)} capas/años</span>
+                  <button type="button" class="btn btn-teal btn-xs" data-atlas-plate-select="{esc(pk)}">Ver lámina en el mapa ↑</button>
+                </div>
+                <h3 style="margin:0.2rem 0 0.4rem;font-size:1.02rem;color:var(--c-brand-blue);">{esc(ptitle)}</h3>
+                <p style="font-size:0.86rem;color:var(--c-text-muted);margin-bottom:0.55rem;">{esc(preading)}</p>
+                <div class="atlas-variant-box" style="margin-bottom:0.65rem;">
+                  <div class="atlas-variant-box-label"><span>📅 Años / Capas disponibles (clic para cargar en el mapa):</span></div>
+                  <div class="atlas-variant-pills">{var_pills}</div>
+                </div>
+                <ul class="atlas-swatch-list">{sw_rows}</ul>
+              </div>
+            </article>
+            """
+        )
+
+    return f"""
+    <section class="section" id="atlas-copernicus-zona" aria-labelledby="titulo-atlas-copernicus">
+      <div class="section-header" style="margin-bottom:0.75rem;">
+        <div>
+          <span class="badge badge-lime">Cartografía Temática Enmascarada · 10 Láminas y Series Anuales Completas</span>
+          <h2 id="titulo-atlas-copernicus" style="margin:0.3rem 0 0.2rem;">Atlas Temático Copernicus de la Zona de Estudio ({esc(territory_label)})</h2>
+          <p style="margin:0;color:var(--c-text-muted);font-size:0.93rem;">Explora las <strong>10 láminas temáticas y todas las series multitemporales anuales (Mosaicos Sentinel-2 2018–2024, DEM GLO-30 en 3 modos, ESA WorldCover 2020–2021, Uso del Suelo LULC 2017–2023, Índices NDVI/NDBI/NDWI, Infrarrojo/SWIR, Radar Sentinel-1 y Agua JRC)</strong> recortadas visualmente con el perímetro de <strong>{esc(territory_label)}</strong>.</p>
+        </div>
+      </div>
+
+      <div class="atlas-pdf-banner" role="region" aria-label="Descarga del Atlas Institucional en PDF">
+        <div class="atlas-pdf-banner-inner">
+          <div class="atlas-pdf-banner-text">
+            <span class="atlas-pdf-banner-eyebrow">📘 Edición Editorial A4 Horizontal · Identidad Institucional 2.0.0-copernicus-2026</span>
+            <h3 class="atlas-pdf-banner-title">Documento Oficial del Atlas Temático Copernicus para Descargar en PDF ({esc(territory_label)})</h3>
+            <p class="atlas-pdf-banner-desc">Incluye portada institucional con trama cartográfica y logos oficiales, ficha técnica e índice, las <strong>10 láminas temáticas principales</strong> y las <strong>páginas de series multitemporales completas con todos los años y modos (2017–2024)</strong> recortadas con el límite de <strong>{esc(territory_label)}</strong> y sus leyendas cromáticas hexadecimales.</p>
+          </div>
+          <div class="atlas-pdf-banner-actions">
+            <a class="btn btn-primary" href="{pdf_href}" download="{esc(pdf_dl_name)}">📥 Descargar Atlas Institucional Completo (PDF · 22 Págs. · 60 capas)</a>
+            <button type="button" class="btn btn-teal" data-atlas-export-pdf>🖨️ Exportar lámina / año actual a PDF</button>
+            <a class="btn btn-outline-light btn-xs" href="{pdf_href}" target="_blank" rel="noopener noreferrer">Abrir PDF en pestaña ↗</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="atlas-plate-tabs" role="tablist" aria-label="Láminas temáticas del Atlas Copernicus">
+        {"".join(tabs_html)}
+      </div>
+
+      <div class="atlas-copernicus-shell">
+        <div class="atlas-copernicus-map-col">
+          <div class="geovisor-toolbar" style="border-radius:0;">
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;">
+              <strong id="atlas-toolbar-plate-label" style="font-size:0.82rem;color:var(--c-accent-yellow);">🛰️ 1. Mosaicos Anuales Sentinel-2 (2018–2024)</strong>
+              <label style="display:inline-flex;align-items:center;gap:0.3rem;font-size:0.76rem;color:#FFFFFF;">
+                <span>Año / Capa:</span>
+                <select id="atlas-toolbar-variant-select" class="atlas-toolbar-select" aria-label="Seleccionar año o variante de la lámina en la barra del mapa"></select>
+              </label>
+              <button type="button" id="atlas-toolbar-play-btn" class="atlas-play-btn" title="Reproducir o pausar secuencia multitemporal animada">▶ Reproducir serie</button>
+              <label style="display:inline-flex;align-items:center;gap:0.35rem;font-size:0.76rem;background:rgba(255,255,255,0.12);padding:0.2rem 0.48rem;border-radius:4px;cursor:pointer;">
+                <input type="checkbox" id="atlas-toggle-mask" checked>
+                <span>Enmascarar límite</span>
+              </label>
+              <label style="display:inline-flex;align-items:center;gap:0.3rem;font-size:0.74rem;">
+                <span>Opacidad:</span>
+                <input type="range" id="atlas-mask-opacity" min="0" max="1" step="0.05" value="0.88" style="width:68px;" aria-label="Opacidad de la máscara del límite">
+              </label>
+            </div>
+            <div class="geovisor-toolbar-actions">
+              <a class="btn btn-primary btn-xs" href="{pdf_href}" download="{esc(pdf_dl_name)}" title="Descargar el Atlas completo (10 láminas + series multitemporales) en PDF">📥 Descargar Atlas PDF</a>
+              <button type="button" class="btn btn-outline-light btn-xs" data-atlas-export-pdf title="Exportar la lámina y año actuales en formato A4 Horizontal institucional">🖨️ Lámina a PDF</button>
+              <button type="button" id="atlas-fit-bounds" class="btn btn-outline-light btn-xs">Encuadrar límite</button>
+              <button type="button" id="atlas-toggle-fullscreen" class="btn btn-outline-light btn-xs">⛶ Pantalla completa</button>
+            </div>
+          </div>
+          <div class="atlas-map-stage">
+            <div id="atlas-map-year-badge" class="atlas-map-year-badge" aria-live="polite">
+              <span id="atlas-map-year-top" class="atlas-map-year-badge-top">SERIE MULTITEMPORAL (7/7)</span>
+              <span id="atlas-map-year-main" class="atlas-map-year-badge-main">2024</span>
+            </div>
+            <div id="atlas-copernicus-map" class="atlas-copernicus-canvas" data-center="{center_attr}" data-zoom="{initial_zoom}" role="region" aria-label="Mapa del Atlas Temático Copernicus enmascarado con la zona de estudio"></div>
+          </div>
+        </div>
+
+        <div class="atlas-copernicus-info-col" id="atlas-plate-detail">
+          <div>
+            <span id="atlas-plate-badge" class="badge badge-lime">Lámina 1 · 2024</span>
+            <h3 id="atlas-plate-title" style="margin:0.35rem 0 0.25rem;font-size:1.1rem;color:var(--c-brand-blue);">Mosaico Anual sin Nubes Copernicus Sentinel-2 Cloudless · Año 2024 (10 m)</h3>
+            <p style="margin:0;font-size:0.8rem;color:var(--c-text-muted);"><strong>Sensor / Fuente:</strong> <span id="atlas-plate-sensor">Copernicus Sentinel-2 MSI · Mosaicos anuales sin nubes (10 m)</span></p>
+            <p style="margin:0.15rem 0 0;font-size:0.78rem;color:var(--c-text-muted);"><strong>Parámetro / Expresión:</strong> <code id="atlas-plate-formula">Compuesto anual óptico en Color Verdadero RGB (B04-B03-B02)</code></p>
+          </div>
+
+          <div class="atlas-variant-box">
+            <label for="atlas-panel-variant-select" id="atlas-variant-selector-label" class="atlas-variant-box-label">📅 Seleccionar año o variante de la capa:</label>
+            <select id="atlas-panel-variant-select" class="atlas-variant-select" aria-label="Selector desplegable de año o capa del tema"></select>
+            <div id="atlas-variant-pills" class="atlas-variant-pills" role="group" aria-label="Botones rápidos de año o variante"></div>
+            <div id="atlas-timeline-controls" class="atlas-timeline-controls" aria-label="Controles de animación multitemporal">
+              <div class="atlas-timeline-row">
+                <button type="button" id="atlas-panel-play-btn" class="atlas-play-btn">▶ Reproducir secuencia</button>
+                <button type="button" id="atlas-step-prev" class="atlas-step-btn" title="Año anterior">⏮ Ant.</button>
+                <button type="button" id="atlas-step-next" class="atlas-step-btn" title="Año siguiente">Sig. ⏭</button>
+                <select id="atlas-play-speed" class="atlas-speed-select" aria-label="Velocidad de la animación">
+                  <option value="2800">Lento (2.8 s)</option>
+                  <option value="1800" selected>Normal (1.8 s)</option>
+                  <option value="1000">Rápido (1.0 s)</option>
+                </select>
+              </div>
+              <div class="atlas-timeline-row" style="gap:0.5rem;">
+                <input type="range" id="atlas-timeline-slider" min="0" max="6" step="1" value="6" style="flex:1;" aria-label="Deslizador de línea de tiempo">
+                <span id="atlas-timeline-counter" style="font-size:0.74rem;font-weight:700;color:var(--c-brand-blue);min-width:44px;text-align:right;">7 / 7</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#F3F6FD;border-left:3px solid var(--c-brand-blue);padding:0.65rem 0.8rem;border-radius:4px;font-size:0.85rem;line-height:1.45;">
+            <strong style="color:var(--c-brand-blue);display:block;margin-bottom:0.2rem;">Lectura e interpretación territorial en {esc(territory_label)}:</strong>
+            <span id="atlas-plate-reading">Permite inspeccionar visualmente la evolución física del territorio año por año entre 2018 y 2024.</span>
+          </div>
+
+          <div>
+            <h4 style="margin:0 0 0.45rem;font-size:0.86rem;text-transform:uppercase;letter-spacing:0.03em;color:var(--c-brand-blue);">Guía de interpretación de los colores de la leyenda</h4>
+            <ul id="atlas-plate-swatches" class="atlas-swatch-list"></ul>
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;gap:0.45rem;padding-top:0.5rem;border-top:1px solid var(--c-border);">
+            <a class="btn btn-primary btn-xs" href="{pdf_href}" download="{esc(pdf_dl_name)}">📥 Descargar Atlas Completo (PDF)</a>
+            <button type="button" class="btn btn-teal btn-xs" data-atlas-export-pdf>🖨️ Exportar esta lámina y año a PDF</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:1.4rem;">
+        <h3 style="margin:0 0 0.4rem;color:var(--c-brand-blue);">Catálogo completo de las 10 Láminas, Selectores Anuales y Leyendas Cromáticas</h3>
+        <p style="margin:0 0 0.9rem;font-size:0.88rem;color:var(--c-text-muted);">Haz clic en cualquier <strong>año o modo</strong> dentro de las tarjetas inferiores (o en <strong>Ver lámina en el mapa ↑</strong>) para cargarlo directamente en el visor superior con el límite de la zona de estudio:</p>
+        <div class="grid-2">
+          {"".join(cards_html)}
+        </div>
+      </div>
+    </section>
+    """
+
+
 def build_resultados_page(
     ctx: SiteContext,
     manifest: dict[str, Any],
@@ -1170,6 +1713,7 @@ def build_resultados_page(
     atlas_products: list[dict[str, Any]],
     continuidad_md: str,
     branding: dict[str, Any],
+    layers_cfg: dict[str, Any] | None = None,
 ) -> str:
     outputs_li = "".join(f"<li>{esc(o)}</li>" for o in manifest.get("expected_outputs", [])) or "<li>Productos esperados por detallar.</li>"
 
@@ -1212,6 +1756,37 @@ def build_resultados_page(
 
     colaborar_logos_href = ctx.site_url("colaborar/") + "#anadir-actualizar-logos"
 
+    figuras_dir = ROOT / "web" / "assets" / "img" / "figuras"
+    figuras_html = ""
+    if figuras_dir.is_dir():
+        fig_files = sorted(
+            f for f in figuras_dir.iterdir()
+            if f.is_file() and f.suffix.lower() in (".png", ".jpg", ".jpeg", ".svg", ".webp")
+        )
+        if fig_files:
+            fig_cards = []
+            for ff in fig_files:
+                f_url = html.escape(ctx.site_url(f"assets/img/figuras/{ff.name}"), quote=True)
+                f_label = esc(ff.stem.replace("_", " ").capitalize())
+                fig_cards.append(
+                    f"""
+                    <article class="card">
+                      <span class="badge badge-ok">Evidencia gráfica del repositorio</span>
+                      <h3 style="margin:0.35rem 0 0.5rem;font-size:1rem;">{f_label}</h3>
+                      <a href="{f_url}" target="_blank" rel="noopener noreferrer" style="display:block;border:1px solid var(--c-border);border-radius:8px;overflow:hidden;background:#070A14;">
+                        <img src="{f_url}" alt="{f_label}" style="width:100%;height:auto;display:block;" loading="lazy">
+                      </a>
+                    </article>
+                    """
+                )
+            figuras_html = f"""
+            <section class="section">
+              <h2>Figuras y visualizaciones analíticas incorporadas por el equipo</h2>
+              <p>Gráficos y salidas analíticas generadas a partir de los scripts del proyecto en <code>src/</code> y almacenadas en <code>web/assets/img/figuras/</code>:</p>
+              <div class="grid-2">{"".join(fig_cards)}</div>
+            </section>
+            """
+
     hero = f"""
     <section class="hero">
       <div class="container">
@@ -1225,8 +1800,21 @@ def build_resultados_page(
     </section>
     """
 
+    mv = (layers_cfg or {}).get("map_view", {})
+    initial_center = mv.get("initial_center", [-84.0, 10.0])
+    initial_zoom = float(mv.get("initial_zoom", 12))
+    atlas_copernicus_section = render_copernicus_study_area_atlas_section(
+        territory_label=manifest["territory"]["label"],
+        initial_center=initial_center,
+        initial_zoom=initial_zoom,
+        ctx=ctx,
+        pid=manifest["id"],
+    )
+
     body = f"""
     {render_status_strip(manifest)}
+
+    {atlas_copernicus_section}
 
     <section class="section">
       <div class="grid-2">
@@ -1252,6 +1840,8 @@ def build_resultados_page(
       {"".join(atlas_cards) if atlas_cards else "<p>Sin fichas de Atlas registradas todavía.</p>"}
     </section>
 
+    {figuras_html}
+
     <section class="section">
       <div class="prose">
         {render_markdown(continuidad_md)}
@@ -1265,10 +1855,11 @@ def build_resultados_page(
         ctx=ctx,
         manifest=manifest,
         repo_cfg=repo_cfg,
-        page_title="Resultados y Atlas",
+        page_title="Resultados y Atlas Copernicus",
         active_nav="resultados",
         hero_html=hero,
         body_html=body,
+        include_maplibre=True,
     )
 
 
@@ -1786,7 +2377,7 @@ def main() -> int:
     write_deterministic(out_dir / "proyecto" / "index.html", build_proyecto_page(ctx, manifest, repo_cfg, project_md, pmv_md, branding))
     write_deterministic(out_dir / "aplicacion" / "index.html", build_aplicacion_page(ctx, manifest, repo_cfg, layers_cfg, branding))
     write_deterministic(out_dir / "metodologia" / "index.html", build_metodologia_page(ctx, manifest, repo_cfg, metodologia_md, branding))
-    write_deterministic(out_dir / "resultados" / "index.html", build_resultados_page(ctx, manifest, repo_cfg, atlas_products, continuidad_md, branding))
+    write_deterministic(out_dir / "resultados" / "index.html", build_resultados_page(ctx, manifest, repo_cfg, atlas_products, continuidad_md, branding, layers_cfg))
     write_deterministic(out_dir / "colaborar" / "index.html", build_colaborar_page(ctx, manifest, repo_cfg, branding))
     write_deterministic(out_dir / "404.html", build_404_page(ctx, manifest, repo_cfg))
 

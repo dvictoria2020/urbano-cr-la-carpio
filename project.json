@@ -98,7 +98,7 @@
     "technical_owner": null,
     "content_owner": null,
     "update_frequency": null,
-    "content_updated_at": null
+    "content_updated_at": "2026-11-10"
   },
   "provenance": {
     "sources": [
@@ -209,16 +209,60 @@
           "S13"
         ],
         "note": "Contenido técnico declarado por la fuente; no acredita ejecución ni validación."
+      },
+      {
+        "pointer": "/team",
+        "status": "declarado",
+        "source_ids": [
+          "S12"
+        ],
+        "note": "Equipo técnico interinstitucional confirmado directamente con los representantes de MIVAH, INVU y Municipalidad de San José."
+      },
+      {
+        "pointer": "/governance/content_updated_at",
+        "status": "declarado",
+        "source_ids": [
+          "S12"
+        ],
+        "note": "Actualización de equipo técnico e instituciones registrada el 10 de noviembre de 2026."
       }
     ]
   },
   "team": [
     {
+      "name": "Jonnathan Obando Artiaga",
+      "role": "Equipo técnico",
+      "institution": "Ministerio de Vivienda y Asentamientos Humanos (MIVAH)",
+      "github_username": "Jonta0906",
+      "profile_url": "https://github.com/Jonta0906"
+    },
+    {
       "name": "Victoria Delgado Fernández",
-      "role": "Colaboradora",
-      "institution": null,
+      "role": "Equipo técnico",
+      "institution": "Ministerio de Vivienda y Asentamientos Humanos (MIVAH)",
       "github_username": "dvictoria2020",
       "profile_url": "https://github.com/dvictoria2020"
+    },
+    {
+      "name": "Emiler Segura López",
+      "role": "Equipo técnico",
+      "institution": "Instituto Nacional de Vivienda y Urbanismo (INVU)",
+      "github_username": "UCTOT",
+      "profile_url": "https://github.com/UCTOT"
+    },
+    {
+      "name": "Rodolfo Bolaños Bermúdez",
+      "role": "Equipo técnico",
+      "institution": "Instituto Nacional de Vivienda y Urbanismo (INVU)",
+      "github_username": "rbolanos10-eng",
+      "profile_url": "https://github.com/rbolanos10-eng"
+    },
+    {
+      "name": "Jaqueline Vargas Bogantes",
+      "role": "Equipo técnico",
+      "institution": "Municipalidad de San José",
+      "github_username": "jakyvargasb-ops",
+      "profile_url": "https://github.com/jakyvargasb-ops"
     }
   ],
   "data_sources": [

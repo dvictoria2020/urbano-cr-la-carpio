@@ -1,7 +1,5 @@
 # Evaluación estratégica y prospectiva del asentamiento informal La Carpio como insumo para la construcción del Plan Maestro de Intervención Urbanística Integral, San José, Costa Rica.
 
-**Colaboradora:** Victoria Delgado Fernández
-
 > **Identificador estable de iniciativa:** `cr-la-carpio` · Parte del ecosistema **Comunidad Urbana Copernicus Centroamérica**.
 
 La iniciativa propone reunir información territorial y ambiental de La Carpio para apoyar la formulación e implementación de su Plan Maestro de Intervención Urbanística Integral y el trabajo de las instituciones involucradas.

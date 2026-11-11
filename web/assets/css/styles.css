@@ -1270,6 +1270,43 @@ tr:last-child td {
   box-shadow: var(--shadow-md);
 }
 
+.geovisor-shell.is-sidebar-collapsed {
+  grid-template-columns: 1fr;
+}
+
+.geovisor-shell.is-sidebar-collapsed .geovisor-sidebar {
+  display: none;
+}
+
+.geovisor-shell:fullscreen,
+.geovisor-shell:-webkit-full-screen,
+.geovisor-shell.is-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  min-height: 100vh !important;
+  z-index: 9999 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  margin: 0 !important;
+}
+
+.geovisor-shell:fullscreen .geovisor-sidebar,
+.geovisor-shell:-webkit-full-screen .geovisor-sidebar,
+.geovisor-shell.is-fullscreen .geovisor-sidebar {
+  max-height: 100vh !important;
+  height: 100vh !important;
+}
+
+.geovisor-shell:fullscreen .geovisor-stage,
+.geovisor-shell:-webkit-full-screen .geovisor-stage,
+.geovisor-shell.is-fullscreen .geovisor-stage {
+  height: 100vh !important;
+  min-height: 100vh !important;
+}
+
 @media (max-width: 980px) {
   .geovisor-shell {
     grid-template-columns: 1fr;
@@ -1458,6 +1495,27 @@ tr:last-child td {
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.hub-map-card:fullscreen,
+.hub-map-card:-webkit-full-screen,
+.hub-map-card.is-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999 !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
+.hub-map-card:fullscreen .hub-map-canvas,
+.hub-map-card:-webkit-full-screen .hub-map-canvas,
+.hub-map-card.is-fullscreen .hub-map-canvas {
+  flex: 1 1 auto !important;
+  height: calc(100vh - 105px) !important;
 }
 
 .hub-map-canvas {
@@ -1543,3 +1601,572 @@ tr:last-child td {
 .hidden {
   display: none !important;
 }
+
+/* ==========================================================================
+   Atlas Temático Copernicus de la Zona de Estudio (Mapa Enmascarado + Leyendas)
+   ========================================================================== */
+.atlas-plate-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+}
+
+.atlas-plate-tab {
+  padding: 0.48rem 0.85rem;
+  border: 1px solid var(--c-border-strong);
+  background: var(--c-surface);
+  color: var(--c-brand-blue);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.atlas-plate-tab:hover {
+  background: var(--c-surface-alt);
+  border-color: var(--c-brand-blue);
+}
+
+.atlas-plate-tab.is-active {
+  background: var(--c-brand-blue);
+  color: var(--c-accent-yellow);
+  border-color: var(--c-brand-blue);
+  box-shadow: 0 2px 8px rgba(0, 10, 98, 0.18);
+}
+
+.atlas-copernicus-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1.28fr) minmax(340px, 1fr);
+  background: var(--c-surface);
+  border: 2px solid var(--c-brand-blue);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  min-height: 560px;
+}
+
+@media (max-width: 980px) {
+  .atlas-copernicus-shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+.atlas-copernicus-shell:fullscreen,
+.atlas-copernicus-shell:-webkit-full-screen,
+.atlas-copernicus-shell.is-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999 !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
+.atlas-copernicus-map-col {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 520px;
+  background: #070D24;
+  border-right: 1px solid var(--c-border);
+}
+
+.atlas-copernicus-canvas {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 460px;
+}
+
+.atlas-copernicus-info-col {
+  padding: 1.25rem 1.35rem;
+  background: var(--c-surface);
+  overflow-y: auto;
+  max-height: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.atlas-copernicus-shell:fullscreen .atlas-copernicus-info-col,
+.atlas-copernicus-shell.is-fullscreen .atlas-copernicus-info-col {
+  max-height: 100vh;
+}
+
+.atlas-swatch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.48rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.atlas-swatch-item {
+  display: grid;
+  grid-template-columns: 28px minmax(110px, 0.9fr) 1.5fr;
+  gap: 0.6rem;
+  align-items: start;
+  padding: 0.45rem 0.55rem;
+  background: var(--c-surface-alt);
+  border: 1px solid var(--c-border);
+  border-radius: 6px;
+  font-size: 0.81rem;
+  line-height: 1.38;
+}
+
+@media (max-width: 600px) {
+  .atlas-swatch-item {
+    grid-template-columns: 24px 1fr;
+  }
+  .atlas-swatch-desc {
+    grid-column: 1 / -1;
+  }
+}
+
+.atlas-swatch-chip {
+  width: 24px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid rgba(20, 40, 63, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25);
+  margin-top: 2px;
+}
+
+.atlas-swatch-label {
+  font-weight: 700;
+  color: var(--c-brand-blue);
+}
+
+.atlas-swatch-desc {
+  color: var(--c-text);
+}
+
+.atlas-variant-box {
+  background: #FFFDF4;
+  border: 1px solid #E5D48A;
+  border-radius: 6px;
+  padding: 0.55rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+}
+
+.atlas-variant-box-label {
+  font-size: 0.77rem;
+  font-weight: 700;
+  color: var(--c-brand-blue);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+.atlas-variant-select {
+  width: 100%;
+  padding: 0.36rem 0.55rem;
+  font-size: 0.81rem;
+  font-weight: 600;
+  color: var(--c-brand-blue);
+  background: #FFFFFF;
+  border: 1px solid var(--c-border-strong);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.atlas-toolbar-select {
+  padding: 0.22rem 0.48rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--c-brand-blue);
+  background: var(--c-accent-yellow);
+  border: 1px solid var(--c-accent-yellow);
+  border-radius: 4px;
+  cursor: pointer;
+  max-width: 290px;
+}
+
+.atlas-variant-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.32rem;
+}
+
+.atlas-variant-pill {
+  padding: 0.24rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 4px;
+  border: 1px solid var(--c-border-strong);
+  background: #FFFFFF;
+  color: var(--c-brand-blue);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.atlas-variant-pill:hover {
+  background: var(--c-surface-alt);
+  border-color: var(--c-brand-blue);
+}
+
+.atlas-variant-pill.is-active {
+  background: var(--c-brand-blue);
+  color: var(--c-accent-yellow);
+  border-color: var(--c-brand-blue);
+}
+
+.atlas-timeline-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+  margin-top: 0.25rem;
+  padding-top: 0.45rem;
+  border-top: 1px dashed #D6C36B;
+}
+
+.atlas-timeline-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.38rem;
+}
+
+.atlas-play-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  padding: 0.28rem 0.65rem;
+  font-size: 0.77rem;
+  font-weight: 700;
+  border-radius: 4px;
+  border: 1px solid var(--c-brand-blue);
+  background: var(--c-brand-blue);
+  color: var(--c-accent-yellow);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.atlas-play-btn:hover {
+  background: var(--c-mesh-blue);
+  color: #FFFFFF;
+}
+
+.atlas-play-btn.is-playing {
+  background: #C62828;
+  border-color: #C62828;
+  color: #FFFFFF;
+  box-shadow: 0 0 0 2px rgba(198, 40, 40, 0.25);
+}
+
+.atlas-step-btn {
+  padding: 0.24rem 0.48rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  border-radius: 4px;
+  border: 1px solid var(--c-border-strong);
+  background: #FFFFFF;
+  color: var(--c-brand-blue);
+  cursor: pointer;
+}
+
+.atlas-step-btn:hover {
+  background: var(--c-surface-alt);
+}
+
+.atlas-speed-select {
+  padding: 0.22rem 0.42rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid var(--c-border-strong);
+  background: #FFFFFF;
+  color: var(--c-brand-blue);
+}
+
+.atlas-map-stage {
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 460px;
+}
+
+.atlas-map-year-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+  background: rgba(7, 13, 36, 0.78);
+  color: #FFFFFF;
+  border: 1px solid var(--c-accent-yellow);
+  border-radius: 6px;
+  padding: 0.24rem 0.6rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.45rem;
+  backdrop-filter: blur(3px);
+}
+
+.atlas-map-year-badge-top {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--c-accent-yellow);
+  font-weight: 700;
+}
+
+.atlas-map-year-badge-main {
+  font-family: var(--font-heading);
+  font-size: 0.92rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #FFFFFF;
+}
+
+.atlas-map-year-badge.is-playing {
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3), 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.atlas-copernicus-canvas .maplibregl-ctrl-attrib {
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+  padding: 2px 6px !important;
+  max-width: 280px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* ==========================================================================
+   Banner Institucional de Descarga y Exportación del Atlas en PDF
+   ========================================================================== */
+.atlas-pdf-banner {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--c-cover-blue);
+  background-image:
+    linear-gradient(125deg, rgba(12, 22, 89, 0.94) 0%, rgba(0, 10, 98, 0.90) 58%, rgba(23, 32, 112, 0.92) 100%),
+    url("../img/brand/bg-trama-cartografica.png");
+  background-size: cover;
+  background-position: center;
+  color: #FFFFFF;
+  border: 2px solid var(--c-accent-yellow);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-md);
+}
+
+.atlas-pdf-banner::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -4px;
+  width: min(100%, 420px);
+  height: 76px;
+  background-image: url("../img/brand/onda-puntos-amarilla.png");
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: contain;
+  opacity: 0.42;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.atlas-pdf-banner-inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem 1.25rem;
+}
+
+.atlas-pdf-banner-text {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+
+.atlas-pdf-banner-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--c-accent-yellow);
+  color: var(--c-brand-blue);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.18rem 0.55rem;
+  border-radius: 4px;
+  margin-bottom: 0.35rem;
+}
+
+.atlas-pdf-banner-title {
+  margin: 0 0 0.2rem;
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.atlas-pdf-banner-desc {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #E2E8F8;
+  line-height: 1.42;
+}
+
+.atlas-pdf-banner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.atlas-pdf-project-pills {
+  position: relative;
+  z-index: 2;
+  margin-top: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(255, 200, 0, 0.28);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.atlas-pdf-project-pills-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--c-accent-yellow);
+  margin-right: 0.25rem;
+}
+
+.atlas-pdf-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 200, 0, 0.45);
+  border-radius: 5px;
+  padding: 0.2rem 0.52rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.atlas-pdf-pill:hover,
+.atlas-pdf-pill.is-active {
+  background: var(--c-accent-yellow);
+  color: var(--c-brand-blue);
+  border-color: var(--c-accent-yellow);
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 0 0 2px rgba(255, 200, 0, 0.35);
+}
+
+.atlas-pdf-pill.is-filtered-out {
+  display: none !important;
+}
+
+/* ==========================================================================
+   Modal de Vista Previa e Impresión Institucional A4 Horizontal (Lámina Activa)
+   ========================================================================== */
+.atlas-print-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(7, 13, 36, 0.88);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.atlas-print-modal-bar {
+  width: min(100%, 1122px);
+  background: var(--c-cover-blue);
+  color: #FFFFFF;
+  border: 2px solid var(--c-accent-yellow);
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.atlas-print-sheet {
+  width: 297mm;
+  height: 210mm;
+  max-width: 100%;
+  background: #F4F6FB;
+  color: #0F1738;
+  font-family: "Calibri", "Segoe UI", Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  box-shadow: 0 12px 38px rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--c-accent-yellow);
+  flex-shrink: 0;
+}
+
+@media print {
+  @page {
+    size: 297mm 210mm;
+    margin: 0;
+  }
+  body.is-printing-atlas-plate > *:not(#atlas-print-modal-backdrop) {
+    display: none !important;
+  }
+  body.is-printing-atlas-plate {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #F4F6FB !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  body.is-printing-atlas-plate #atlas-print-modal-backdrop {
+    position: static !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+  body.is-printing-atlas-plate .atlas-print-modal-bar {
+    display: none !important;
+  }
+  body.is-printing-atlas-plate .atlas-print-sheet {
+    width: 297mm !important;
+    height: 210mm !important;
+    max-width: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+  }
+}
+
+
+
+
+
+
