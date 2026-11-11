@@ -2,6 +2,10 @@
 site/
 site_fork_test/
 
+# Insumos geoespaciales locales no preparados para publicación
+Informacion base/
+geovisor/capas/local_*.geojson
+
 # Entornos y cachés Python
 __pycache__/
 *.py[cod]
